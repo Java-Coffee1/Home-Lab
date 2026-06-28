@@ -10,7 +10,7 @@ outline.sql
 cf_api_token.txt
 smtp_user.txt
 smtp_password.txt
-
+passwords.txt
 
 # User-specific files
 *.rsuser

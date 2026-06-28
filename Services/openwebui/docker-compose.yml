@@ -1,0 +1,65 @@
+services:
+  ollama:
+    volumes:
+      - ollama:/root/.ollama
+    container_name: ollama
+    pull_policy: always
+    tty: true
+    restart: unless-stopped
+    image: ollama/ollama:${OLLAMA_DOCKER_TAG-latest}
+    environment:
+      - OLLAMA_KEEP_ALIVE=-1
+      - OLLAMA_CONTEXT_LENGTH=8192
+      - OLLAMA_NUM_PARALLEL=2
+    networks:
+      - proxy-net
+
+  openwebui:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: open-webui
+    volumes:
+      - open-webui:/app/backend/data
+    depends_on:
+      - ollama
+    # ports:
+    #   - ${OPEN_WEBUI_PORT-3000}:8080
+    environment:
+      - 'OLLAMA_BASE_URL=http://ollama:11434'
+      - 'WEBUI_SECRET_KEY=968f2db704af67c87769a2f2076fe06411cdb0e3d8c19019d80158d24c2300c8'
+      - ENABLE_OAUTH_SIGNUP=true
+      - OAUTH_CLIENT_ID=${OAUTH_CLIENT_ID}
+      - OAUTH_CLIENT_SECRET=${OAUTH_CLIENT_SECRET}
+      - OPENID_PROVIDER_URL=https://auth.javamurray.com/application/o/open-webui/.well-known/openid-configuration
+      - OAUTH_PROVIDER_NAME=Your Provider Name
+      - OAUTH_SCOPES=openid email profile
+      - OPENID_REDIRECT_URI=https://ai.javamurray.com/oauth/oidc/callback
+      - OPENAI_API_KEY= ${OPENAI_API_KEY}
+
+      # Other settings
+      - CORS_ALLOW_ORIGIN=*
+      - FORWARDED_ALLOW_IPS=*
+      - SCARF_NO_ANALYTICS=true
+      - DO_NOT_TRACK=true
+      - ANONYMIZED_TELEMETRY=false
+
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    restart: unless-stopped
+    networks:
+      - proxy-net
+networks:
+  proxy-net:
+    external: true
+volumes:
+  ollama:
+    driver: local
+    driver_opts:
+      type: none
+      device: ./ollama-data
+      o: bind
+  open-webui:
+    driver: local
+    driver_opts:
+      type: none
+      device: ./open-webui-data
+      o: bind

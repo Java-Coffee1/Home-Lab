@@ -16,6 +16,7 @@ http:
         loadBalancer: 
           servers:
           - url: "http://immich-server:2283"
+          # - url: "http://10.10.1.108:2283"
       ConvertX:
         loadBalancer:
           servers:

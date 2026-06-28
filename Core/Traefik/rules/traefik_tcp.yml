@@ -1,0 +1,28 @@
+tcp:
+  routers:
+    crafty-fmboysmc:
+      entryPoints:
+        - minecraft
+      rule: "HostSNI(`*`)"  # Use wildcard for testing, or your domain
+      # OR if you want to support both domain and IP:
+      # rule: "HostSNI(`fmboysmc.javamurray.com`) || HostSNI(`*`)"
+      # rule: "HostSNI(`fmboysmc.javamurray.com`)"
+      service: crafty-fmboysmc
+      # tls:
+      #   passthrough: true
+    # crafty-eventsmc-fmboysmc:
+    #   entryPoints:
+    #     - minecraft
+    #   rule: "HostSNI(`eventsmc.javamurray.com`)"
+    #   service: crafty-eventsmc-fmboysmc
+  services:
+    crafty-fmboysmc:
+      loadBalancer:
+        servers:
+          - address: "tasks.crafty:25565"
+    # crafty-eventsmc-fmboysmc:
+    #   loadBalancer:
+    #     servers:
+    #       - address: "tasks.crafty:25585"
+
+        # For TCP services, you need to specify the port in the service

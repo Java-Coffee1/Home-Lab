@@ -1,0 +1,47 @@
+http:
+  services:
+      outline:
+        loadBalancer:
+          servers:
+          - url: "http://outline-app:3000"
+      oauth2-proxy:
+        loadBalancer:
+          servers:
+          - url: "http://oauth2-proxy:4180"
+      planka:
+        loadBalancer:
+          servers:
+          - url: "http://planka:1337"
+      immich:
+        loadBalancer: 
+          servers:
+          - url: "http://immich-server:2283"
+      ConvertX:
+        loadBalancer:
+          servers:
+            - url: "http://convertx:3000"
+      openwebui:
+        loadBalancer:
+          servers:
+            - url: "http://open-webui:8080"
+      noop:
+        loadBalancer:
+          servers:
+            - url: "http://127.0.0.1"
+      homepage:
+        loadBalancer:
+          servers:
+            - url: "http://homepage:3000"
+      sonarr:
+        loadBalancer:
+          servers:
+            - url: "http://10.10.1.107:8989"
+      radarr:
+        loadBalancer:
+          servers:
+            - url: "http://10.10.1.107:7878"
+      qbittorrent:
+        loadBalancer:
+          servers:
+            - url: "http://10.10.1.107:8085"
+            

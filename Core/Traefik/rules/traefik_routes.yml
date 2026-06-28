@@ -1,0 +1,80 @@
+http:
+  routers:
+    outline:
+      entryPoints:
+        - "https-external"
+      rule: "Host(`outline.javamurray.com`)"
+      service: outline
+      tls: {}
+    copy-party:
+      entryPoints:
+        - "https-external"
+      rule: "Host(`fs.javamurray.com`)"
+      service: oauth2-proxy
+      tls: {}
+    planka:
+      entryPoints:
+        - "https-external"
+      rule: "Host(`kanban.javamurray.com`)"
+      service: planka
+      tls: {}
+    immich:
+      entryPoints:
+        - "https-external"
+      rule: "Host(`photos.javamurray.com`)"
+      middlewares:
+        - immich-upload
+      service: immich
+      tls: {}
+    openwebui:
+      rule: "Host(`ai.javamurray.com`)"
+      entryPoints:
+        - "https-external"
+      service: openwebui
+      tls: {}
+    docsarg:
+      rule: "Host(`docs-arg.javamurray.com`)"
+      entryPoints:
+        - "https-external"
+      middlewares:
+        - docsarg-redirect
+      service: noop
+      tls: {}
+    ConvertX:
+      rule: "Host(`convert.javamurray.com`)"
+      entryPoints:
+        - "https-external"
+      service: ConvertX
+      tls: {}
+    Homepage:
+      rule: "Host(`home.javamurray.com`)"
+      entryPoints:
+        - "https-external"
+      middlewares:
+        - middlewares-authentik
+      service: homepage
+      tls: {}
+    sonarr:
+      rule: "Host(`sonarr.javamurray.com`)"
+      entryPoints:
+        - "https-external"
+      middlewares:
+        - middlewares-authentik
+      service: sonarr
+      tls: {}
+    radarr:
+      rule: "Host(`radarr.javamurray.com`)"
+      entryPoints:  
+        - "https-external"
+      middlewares:
+        - middlewares-authentik
+      service: radarr
+      tls: {}
+    qbittorrent:
+      rule: "Host(`qbit.javamurray.com`)"
+      entryPoints:
+        - "https-external"
+      middlewares:
+        - middlewares-authentik
+      service: qbittorrent
+      tls: {}

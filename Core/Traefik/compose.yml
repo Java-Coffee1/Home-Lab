@@ -1,0 +1,82 @@
+---
+version: '3.8'
+
+services:
+  traefik:
+    image: traefik:v3.6.6
+    ports:
+      - "80:80"
+      - "443:433"
+      - "81:81"
+      - "444:444"
+      - "25565:25565"
+    command:
+      - --configFile=/etc/data/traefik.yml
+    env_file:
+      - ./.env
+    environment:
+      # CF_DNS_API_TOKEN: ${CF_DNS_API_TOKEN} # if using .env
+      TRAEFIK_DASHBOARD_CREDENTIALS: ${TRAEFIK_DASHBOARD_CREDENTIALS}
+      Timezone: America/Vancouver
+      CF_API_EMAIL: julianmurray4152@gmail.com
+      CLOUDFLARE_DNS_API_TOKEN_FILE: /run/secrets/cf_api_token
+    secrets:
+      - source: cf_api_token
+        target: /run/secrets/cf_api_token
+        mode: 400
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - traefik_certs:/var/traefik_certs/certs/:rw
+      - ./rules:/etc/rules:ro
+    configs:
+      - source: traefik_config
+        target: /etc/data/traefik.yml
+      # - source: traefik_middlewares
+      #   target: /etc/rules/traefik_middlewares.yml
+      # - source: traefik_routes
+      #   target: /etc/rules/traefik_routes.yml
+      # - source: traefik_services
+      #   target: /etc/rules/traefik_services.yml
+    labels:
+      # HTTP Routers
+      - "traefik.enable=true"
+      - "traefik.http.routers.traefik-secure.rule=Host(`traefik-live.javamurray.com`)"
+      - "traefik.http.routers.traefik-secure.entrypoints=https-external"
+      - "traefik.http.routers.traefik-secure.tls=true"
+      - "traefik.http.routers.traefik-secure.tls.certresolver=cloudflare"
+      - "traefik.http.routers.traefik-secure.service=api@internal"
+      - "traefik.http.routers.traefik-secure.middlewares=middlewares-authentik@file"
+      # TLS Domains (Wildcard Certificates)
+      - "traefik.http.routers.traefik-secure.tls.domains[0].main=home.javamurray.com"
+      - "traefik.http.routers.traefik-secure.tls.domains[0].sans=*.home.javamurray.com"
+      - "traefik.http.routers.traefik-secure.tls.domains[1].main=javamurray.com"
+      - "traefik.http.routers.traefik-secure.tls.domains[1].sans=*.javamurray.com"
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.hostname == Home-Lab-Live
+
+volumes:
+  traefik_certs:
+configs:
+  traefik_config:
+    file: ./data/traefik.yml
+  traefik_middlewares:
+    file: ./rules/traefik_middlewares.yml
+  traefik_routes:
+    file: ./rules/traefik_routes.yml
+  traefik_services:
+    file: ./rules/traefik_services.yml
+
+networks:
+  proxy-net:
+    # driver: overlay
+    # attachable: true
+    # name: proxy-net
+    external: true
+
+secrets:
+  cf_api_token:
+    file: ./cf_api_token.txt

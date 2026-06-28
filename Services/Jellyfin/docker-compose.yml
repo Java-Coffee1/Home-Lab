@@ -1,0 +1,63 @@
+services:
+  jellyfin:
+    image: jellyfin/jellyfin
+    container_name: jellyfin
+    tmpfs:
+      - /cache:size=32G,mode=1777
+    volumes:
+      - ./config:/config
+      # - ./cache:/cache
+      # - /mnt/Vearyleagalmedia/:/media
+      # - /mnt/Live_Server_NFS/chaosbox/Arg_Drama_Rip_Audio:/Arg_Drama_Rip_Audio
+      - linuxisos-movies:/movies
+      - linuxisos-shows:/shows
+      - linuxisos-iso:/linuxisos
+
+    restart: unless-stopped
+    labels:
+      # Basic Traefik configuration
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.jellyfin.entryPoints=https-external'
+      - 'traefik.http.routers.jellyfin.rule=Host(`jelly.javamurray.com`)'
+      # TLS configuration
+      - 'traefik.http.routers.jellyfin.tls=true'
+      # Reference external middlewares
+      - 'traefik.http.routers.jellyfin.middlewares=jellyfin-security-headers@file'
+      # Service configuration
+      - 'traefik.http.routers.jellyfin.service=jellyfin-svc'
+      - 'traefik.http.services.jellyfin-svc.loadBalancer.server.port=8096'
+      - 'traefik.http.services.jellyfin-svc.loadBalancer.passHostHeader=true'
+
+    networks:
+      - proxy-net
+
+networks:
+  proxy-net:
+    external: true
+
+volumes:
+  linuxisos-movies:
+    driver: local
+    driver_opts:
+      type: nfs
+      o: addr=10.30.30.101,rw,nfsvers=4
+      device: ":/mnt/DataDumpster/Linux_Isos/movies"
+
+  linuxisos-shows:
+    driver: local
+    driver_opts:
+      type: nfs
+      o: addr=10.30.30.101,rw,nfsvers=4
+      device: ":/mnt/DataDumpster/Linux_Isos/shows"
+  linuxisos-downloads:
+    driver: local
+    driver_opts:
+      type: nfs
+      o: addr=10.30.30.101,rw,nfsvers=4
+      device: ":/mnt/DataDumpster/Linux_Isos/downloads"
+  linuxisos-iso:
+    driver: local
+    driver_opts:
+      type: nfs
+      o: addr=10.30.30.101,rw,nfsvers=4
+      device: ":/mnt/DataDumpster/Linux_Isos"

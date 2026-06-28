@@ -8,6 +8,9 @@ postgress_password.txt
 authentik.sql
 outline.sql
 cf_api_token.txt
+smtp_user.txt
+smtp_password.txt
+
 
 # User-specific files
 *.rsuser

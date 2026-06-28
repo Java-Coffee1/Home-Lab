@@ -1,0 +1,21 @@
+---
+# For configuration options and examples, please see:
+# https://gethomepage.dev/configs/settings/
+
+providers:
+  openweathermap: openweathermapapikey
+  weatherapi: weatherapiapikey
+
+layout:
+  Linux ISO Processing:
+    style: row
+    columns: 4
+  Media Servers:
+    style: row
+    columns: 3
+  Production Apps:
+    style: row
+    columns: 3
+  Management Apps:
+    style: row
+    columns: 2

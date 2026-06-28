@@ -74,8 +74,8 @@ services:
       AUTHENTIK_LOG_LEVEL: info
       AUTHENTIK_ERROR_REPORTING__ENABLED: "true"
       AUTHENTIK_SECRET_KEY: file:///run/secrets/authentik_secret_key
-      AUTHENTIK_EMAIL__HOST: postfix-Stmp
-      AUTHENTIK_EMAIL__PORT: 25
+      AUTHENTIK_EMAIL__HOST: msmtpd
+      AUTHENTIK_EMAIL__PORT: 2500
       AUTHENTIK_EMAIL__FROM: noreply@javamurray.com
     env_file:
       - ./.env
@@ -130,8 +130,8 @@ services:
       AUTHENTIK_POSTGRESQL__PASSWORD: file:///run/secrets/postgres_password
       AUTHENTIK_ERROR_REPORTING__ENABLED: "true"
       AUTHENTIK_SECRET_KEY: file:///run/secrets/authentik_secret_key
-      AUTHENTIK_EMAIL__HOST: postfix-Stmp
-      AUTHENTIK_EMAIL__PORT: 25
+      AUTHENTIK_EMAIL__HOST: msmtpd
+      AUTHENTIK_EMAIL__PORT: 2500
       AUTHENTIK_EMAIL__FROM: noreply@javamurray.com
       AUTHENTIK_LOG_LEVEL: info
     user: root

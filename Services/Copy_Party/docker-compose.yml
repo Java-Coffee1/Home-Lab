@@ -1,0 +1,117 @@
+---
+services:
+  copyparty:
+    image: copyparty/ac:latest
+    container_name: copyparty
+    # user: "1000:1000"
+    # ports:
+    #   - 3923:3923
+    volumes:
+      - ./cpp:/cfg:z
+      - copyparty-user-data:/users-data:rw,z
+      - copyparty-user-photos:/user-photos:rw,z
+      - copyparty-chaosbox:/chaosbox:rw,z
+      - /mnt/google-drive:/google-drive:rw,z
+      - linuxisos-audio-book:/linuxisos-audio-book:rw,z
+      # - copyparty-linux-isos:/linux-isos:rw,z
+
+      # - /mnt/Live_Server_NFS/media:/w/media:z
+      # - /mnt/Vearyleagalmedia/:/w/Vearyleagalmedia:z
+    environment:
+      TZ: "America/Vancouver"
+      LD_PRELOAD: /usr/lib/libmimalloc-secure.so.NOPE
+      # enable mimalloc by replacing "NOPE" with "2" for a nice speedspeed-boost (will use twice as much ram)
+      PYTHONUNBUFFERED: 1
+      # ensures log-messages are not delayed (but can reduce speed a tiny bit)
+
+    stop_grace_period: 15s # thumbnailer is allowed to continue finishing up for 10s after the shutdown signal
+    healthcheck:
+      # hide it from logs with "/._" so it matches the default --lf-url filter 
+      test: [ "CMD-SHELL", "wget --spider -q 127.0.0.1:3923/?reset=/._" ]
+      interval: 1m
+      timeout: 2s
+      retries: 5
+      start_period: 15s
+    restart: unless-stopped
+    networks:
+      - proxy-net
+    tty: true
+    depends_on:
+      - oauth2-proxy
+
+  oauth2-proxy:
+    image: quay.io/oauth2-proxy/oauth2-proxy:v7.13.0
+    container_name: oauth2-proxy
+    command:
+      - --provider=oidc
+      - --oidc-issuer-url=https://auth.javamurray.com/application/o/copy-party/
+      - --client-id=${OAUTH2_CLIENT_ID}
+      - --client-secret=${OAUTH2_CLIENT_SECRET}
+      - --cookie-secret=${OAUTH2_COOKIE_SECRET}
+      - --redirect-url=https://fs.javamurray.com/oauth2/callback
+      - --upstream=http://copyparty:3923
+      - --http-address=0.0.0.0:4180
+      - --email-domain=*
+      - --cookie-secure=true
+      - --reverse-proxy=true
+      - --set-authorization-header=true
+      - --pass-authorization-header=true
+      - --pass-user-headers=true
+      - --pass-host-header=true
+      - --set-xauthrequest=true
+      - --pass-access-token=true
+      - --skip-provider-button=true
+      - --user-id-claim=preferred_username
+      - --set-xauthrequest=true
+      - --pass-user-headers=true
+      - --pass-authorization-header=true
+      - --skip-auth-route=^/ #lets copyparty handle its own auth
+      - --code-challenge-method=S256
+    # labels:
+    #   - "traefik.enable=true"
+    #   # Route ALL traffic through OAuth2 Proxy
+    #   - "traefik.http.routers.copyparty.rule=Host(`fs.javamurray.com`)"
+    #   - "traefik.http.routers.copyparty.entrypoints=https-external"
+    #   - "traefik.http.routers.copyparty.tls=true"
+    #   - "traefik.http.routers.copyparty.service=oauth2-proxy-service"
+    #   - "traefik.http.services.oauth2-proxy-service.loadbalancer.server.port=4180"
+    #   - "traefik.docker.network=proxy-net"
+    restart: unless-stopped
+    networks:
+      - proxy-net
+
+volumes:
+  copyparty-user-data:
+    driver: local
+    driver_opts:
+      type: nfs
+      o: addr=10.30.30.101,rw,nfsvers=4
+      device: ":/mnt/DataDumpster/cloud-data-dump/user-data/"
+  copyparty-user-photos:
+    driver: local
+    driver_opts:
+      type: nfs
+      o: addr=10.30.30.101,rw,nfsvers=4
+      device: ":/mnt/DataDumpster/cloud-data-dump/user-photos/"
+  copyparty-chaosbox:
+    driver: local
+    driver_opts:
+      type: nfs
+      o: addr=10.30.30.101,rw,nfsvers=4
+      device: ":/mnt/DataDumpster/cloud-data-dump/chaosbox/"
+  # copyparty-linux-isos:
+  #   driver: local
+  #   driver_opts:
+  #     type: nfs
+  #     o: addr=10.30.30.101,rw,nfsvers=4
+  #     device: ":/mnt/DataDumpster/cloud-data-dump/linuxisos/"
+  linuxisos-audio-book:
+    driver: local
+    driver_opts:
+      type: nfs
+      o: addr=10.30.30.101,rw,nfsvers=4
+      device: ":/mnt/DataDumpster/Linux_Isos/audio_books"
+
+networks:
+  proxy-net:
+    external: true

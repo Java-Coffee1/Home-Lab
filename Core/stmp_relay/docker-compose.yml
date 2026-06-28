@@ -1,0 +1,40 @@
+services:
+  msmtpd:
+    image: crazymax/msmtpd
+    container_name: msmtpd
+    ports:
+      - target: 2500
+        published: 2500
+        protocol: tcp
+    secrets:
+      - smtp_user
+      - smtp_password
+    environment:
+      - "TZ=America/Vancouver"
+      - "PUID=1500"
+      - "PGID=1500"
+      - "SMTP_HOST=smtp.gmail.com"
+      - "SMTP_PORT=587"
+      - "SMTP_TLS=on"
+      - "SMTP_STARTTLS=on" # Start TLS from within the session
+      - "SMTP_TLS_CHECKCERT=on"
+      - "SMTP_AUTH=on" # Automatically chooses authentication method
+      - "SMTP_USER_FILE=/run/secrets/smtp_user"
+      - "SMTP_PASSWORD_FILE=/run/secrets/smtp_password"
+      - "SMTP_DOMAIN=gmail.com"
+      # Optional but recommended:
+      - "SMTP_ALLOW_FROM_OVERRIDE=on" # Allow MAIL FROM override (default on)
+      - "SMTP_SET_FROM_HEADER=auto" # Auto-add From header if missing
+      - "SMTP_SET_DATE_HEADER=auto" # Auto-add Date header if missing
+    restart: unless-stopped
+    networks:
+      - proxy-net
+
+networks:
+  proxy-net:
+    external: true
+secrets:
+  smtp_user:
+    file: ./secrets/smtp_user.txt
+  smtp_password:
+    file: ./secrets/smtp_password.txt

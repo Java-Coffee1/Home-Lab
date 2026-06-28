@@ -1,0 +1,68 @@
+---
+# For configuration options and examples, please see:
+# https://gethomepage.dev/configs/services/
+
+- Linux ISO Processing:
+    - Sonarr:
+        icon: si-sonarr
+        href: https://sonarr.javamurray.com
+        description: TV shows
+        widget:
+          type: sonarr
+          url: http://10.10.1.107:8989
+          key: fcf2713a380e4c3c94f176f7cb4dc34e
+
+    - Radarr:
+        icon: si-radarr
+        href: https://radarr.javamurray.com
+        description: Movies
+        widget:
+          type: radarr
+          url: http://10.10.1.107:7878
+          key: 2ffd265b7a2b4bce9a8673fe26af0936
+
+    - Prowlarr:
+        icon: si-prowlarr
+        href: http://10.10.1.107:9696
+        description: Indexers
+        widget:
+          type: prowlarr
+          url: http://10.10.1.107:9696
+          key: 04988b102984422c93c6d036ea759df3
+
+    - qBittorrent:
+        icon: si-qbittorrent
+        href: https://qbit.javamurray.com
+        description: Torrents
+        widget:
+          type: qbittorrent
+          url: http://10.10.1.107:8085
+          username: admin
+          password: 29er@2703
+
+- Media Servers:
+    - Jellyfin:
+        href: http://jelly.javamurray.com
+        description: Stream and watch your media
+    - Immich:
+        href: http://photos.javamurray.com
+        description: Photo backup and gallery
+
+- Production Apps:
+    - Outline:
+        href: http://outline.javamurray.com
+        description: Team knowledge base and notes
+    - OpenWebUI:
+        href: http://ai.javamurray.com
+        description: Interface for AI models
+    - Copy Party:
+        href: http://fs.javamurray.com
+        description: File sharing and uploads
+
+- Management Apps:
+    - Traefik:
+        href: http://traefik-live.javamurray.com
+        description: Reverse proxy dashboard
+    - Authentik:
+        href: http://auth.javamurray.com
+        description: SSO, authentication, and 2FA

@@ -3,6 +3,12 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/main/VisualStudio.gitignore
 
+authentik_secret_key.txt
+postgress_password.txt
+authentik.sql
+outline.sql
+cf_api_token.txt
+
 # User-specific files
 *.rsuser
 *.suo

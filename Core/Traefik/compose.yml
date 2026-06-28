@@ -1,4 +1,9 @@
----
+## to depoly the stack
+## docker stack deploy -c <compose file yml> <servicename>
+## docker stack deploy -c compose.yml traefik
+
+# Remove the stack
+# docker stack rm traefik
 version: '3.8'
 
 services:
@@ -45,12 +50,14 @@ services:
       - "traefik.http.routers.traefik-secure.tls=true"
       - "traefik.http.routers.traefik-secure.tls.certresolver=cloudflare"
       - "traefik.http.routers.traefik-secure.service=api@internal"
-      - "traefik.http.routers.traefik-secure.middlewares=middlewares-authentik@file"
+      # - "traefik.http.routers.traefik-secure.middlewares=middlewares-authentik@file"
       # TLS Domains (Wildcard Certificates)
       - "traefik.http.routers.traefik-secure.tls.domains[0].main=home.javamurray.com"
       - "traefik.http.routers.traefik-secure.tls.domains[0].sans=*.home.javamurray.com"
       - "traefik.http.routers.traefik-secure.tls.domains[1].main=javamurray.com"
       - "traefik.http.routers.traefik-secure.tls.domains[1].sans=*.javamurray.com"
+    networks:
+      - proxy-net
     deploy:
       mode: replicated
       replicas: 1

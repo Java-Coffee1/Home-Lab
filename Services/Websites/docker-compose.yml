@@ -1,0 +1,76 @@
+services:
+  # livejavamurraycom:
+  #   restart: unless-stopped
+  #   image: nginx:latest
+  #   container_name: livejavamurray
+  #   volumes:
+  #     - ./live.javamurray.com/public:/usr/share/nginx/html:ro
+  #   labels:
+  #     - "traefik.enable=true"
+
+  #     # Router for www.javamurray.com (to serve content)
+  #     - "traefik.http.routers.livejavamurray.rule=Host(`www.javamurray.com`)"
+  #     - "traefik.http.routers.livejavamurray.entrypoints=https-external"
+  #     - "traefik.http.routers.livejavamurray.tls=true"
+  #     - "traefik.http.services.livejavamurray.loadbalancer.server.port=80"
+  #     - "traefik.http.middlewares.ratelimit.ratelimit.average=100"
+  #     - "traefik.http.middlewares.ratelimit.ratelimit.burst=200"
+
+  #     # Router for javamurray.com (to handle the redirect)
+  #     - "traefik.http.routers.javamurray.rule=Host(`javamurray.com`)"
+  #     - "traefik.http.routers.javamurray.entrypoints=https-external"
+  #     - "traefik.http.routers.javamurray.middlewares=redirect-to-www"
+
+  #     # Middleware to redirect javamurray.com to www.javamurray.com
+  #     - "traefik.http.middlewares.redirect-to-www.redirectregex.regex=^https?://javamurray.com/(.*)"
+  #     - "traefik.http.middlewares.redirect-to-www.redirectregex.replacement=https://www.javamurray.com/$1"
+
+  #     # Make sure both routers use HTTPS
+  #     - "traefik.http.routers.javamurray.tls=true"
+  #   networks:
+  #     - frontend-net
+  live-javamurraycom:
+    restart: unless-stopped
+    image: httpd:latest
+    container_name: live-java-murray
+    networks:
+      - proxy-net
+    volumes:
+      - ./javamurraywebsite/public:/usr/local/apache2/htdocs
+    labels:
+      - "traefik.enable=true"
+
+      # Router for www.javamurray.com (to serve content)
+      - "traefik.http.routers.livejavamurray.rule=Host(`www.javamurray.com`)"
+      - "traefik.http.routers.livejavamurray.entrypoints=https-external"
+      - "traefik.http.routers.livejavamurray.tls=true"
+      - "traefik.http.services.livejavamurray.loadbalancer.server.port=80"
+      - "traefik.http.middlewares.ratelimit.ratelimit.average=100"
+      - "traefik.http.middlewares.ratelimit.ratelimit.burst=200"
+
+      # Router for javamurray.com (to handle the redirect)
+      - "traefik.http.routers.javamurray.rule=Host(`javamurray.com`)"
+      - "traefik.http.routers.javamurray.entrypoints=https-external"
+      - "traefik.http.routers.javamurray.middlewares=redirect-to-www"
+
+      # Middleware to redirect javamurray.com to www.javamurray.com
+      - "traefik.http.middlewares.redirect-to-www.redirectregex.regex=^https?://javamurray.com/(.*)"
+      - "traefik.http.middlewares.redirect-to-www.redirectregex.replacement=https://www.javamurray.com/$1"
+
+      # Make sure both routers use HTTPS
+      - "traefik.http.routers.javamurray.tls=true"
+  # nginx:
+  #   image: nginxdemos/nginx-hello
+  #   restart: unless-stopped
+  #   labels:
+  #     - "traefik.enable=true"
+  #     - "traefik.http.routers.nginx.rule=Host(`nginx.javamurray.com`)"
+  #     - "traefik.http.routers.nginx.entrypoints=https-external"
+  #     - "traefik.http.routers.nginx.tls=true"
+  #     - "traefik.http.services.nginx.loadbalancer.server.port=8080"
+  #     - "traefik.http.routers.nginx.middlewares=middlewares-rate-limit@file,middlewares-authentik@file"
+  #   networks:
+  #     - frontend-net
+networks:
+  proxy-net:
+    external: true

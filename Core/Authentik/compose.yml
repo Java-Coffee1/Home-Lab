@@ -1,0 +1,179 @@
+#docker stack deploy -c compose.yml auth
+services:
+  # postgresql:
+  #   image: docker.io/library/postgres:16-alpine
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
+  #     start_period: 20s
+  #     interval: 30s
+  #     retries: 5
+  #     timeout: 5s
+  #   env_file:
+  #     - ./.env
+  #   volumes:
+  #     - database:/var/lib/postgresql/data
+  #   secrets:
+  #     - postgres_password
+  #   environment:
+  #     # - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+  #     POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
+  #     POSTGRES_USER: authentik-admin
+  #     POSTGRES_DB: authentik_data
+  #   networks:
+  #     - auth-backend
+  #   deploy:
+  #     mode: replicated
+  #     replicas: 1
+  #     placement:
+  #       constraints:
+  #         - node.hostname == live-server-1
+  #     resources:
+  #       limits:
+  #         memory: 2g
+
+
+  redis:
+    image: docker.io/library/redis:alpine
+    command: --save 60 1 --loglevel warning
+    healthcheck:
+      test: [ "CMD-SHELL", "redis-cli ping | grep PONG" ]
+      start_period: 30s
+      interval: 30s
+      retries: 5
+      timeout: 3s
+    env_file:
+      - ./.env
+    volumes:
+      - redis:/data
+    networks:
+      # - backend
+      - auth-backend
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.hostname == Home-Lab-Live
+      resources:
+        limits:
+          memory: 2g
+  server:
+    image: ghcr.io/goauthentik/server:2025.8.4
+    command: server
+    # ports:
+    #   - "9000:9000"
+    secrets:
+      - authentik_secret_key
+      - postgres_password
+    environment:
+      AUTHENTIK_REDIS__HOST: tasks.redis
+      AUTHENTIK_POSTGRESQL__HOST: tasks.postgresql_postgresql
+      AUTHENTIK_POSTGRESQL__USER: env://POSTGRES_USER
+      AUTHENTIK_POSTGRESQL__NAME: env://POSTGRES_DB
+      AUTHENTIK_POSTGRESQL__PASSWORD: file:///run/secrets/postgres_password
+      AUTHENTIK_LOG_LEVEL: info
+      AUTHENTIK_ERROR_REPORTING__ENABLED: "true"
+      AUTHENTIK_SECRET_KEY: file:///run/secrets/authentik_secret_key
+      AUTHENTIK_EMAIL__HOST: postfix-Stmp
+      AUTHENTIK_EMAIL__PORT: 25
+      AUTHENTIK_EMAIL__FROM: noreply@javamurray.com
+    env_file:
+      - ./.env
+    volumes:
+      - ./media:/media
+      - ./custom-templates:/templates
+    # depends_on:
+    #   - tasks.postgresql_postgresql
+    #   - tasks.auth_redis
+    networks:
+      - proxy-net
+      - auth-backend
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.hostname == Home-Lab-Live
+      resources:
+        limits:
+          memory: 2g
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.authentik.rule=Host(`auth.javamurray.com`)"
+        - "traefik.http.routers.authentik.entrypoints=https-external"
+        - "traefik.http.routers.authentik.tls=true"
+        - "traefik.http.routers.authentik.priority=10" # Higher priority
+        - "traefik.http.services.authentik.loadbalancer.server.port=9000"
+        - "traefik.http.services.authentik.loadbalancer.passhostheader=true"
+
+        - "traefik.http.routers.authentik-redirect.rule=Host(`authentik.javamurray.com`)"
+        - "traefik.http.routers.authentik-redirect.priority=11" # Higher priority
+        - "traefik.http.routers.authentik-redirect.entrypoints=https-external"
+        - "traefik.http.routers.authentik-redirect.tls=true"
+        - "traefik.http.routers.authentik-redirect.middlewares=redirect-to-new"
+
+        # Middleware for redirect
+        - "traefik.http.middlewares.redirect-to-new.redirectregex.regex=^https?://authentik\\.javamurray\\.com/(.*)"
+        - "traefik.http.middlewares.redirect-to-new.redirectregex.replacement=https://auth.javamurray.com/$${1}"
+        - "traefik.http.middlewares.redirect-to-new.redirectregex.permanent=true"
+  worker:
+    image: ghcr.io/goauthentik/server:2025.8.4
+    command: worker
+    secrets:
+      - authentik_secret_key
+      - postgres_password
+    environment:
+      AUTHENTIK_REDIS__HOST: tasks.redis
+      AUTHENTIK_POSTGRESQL__HOST: tasks.postgresql_postgresql
+      AUTHENTIK_POSTGRESQL__USER: env://POSTGRES_USER
+      AUTHENTIK_POSTGRESQL__NAME: env://POSTGRES_DB
+      AUTHENTIK_POSTGRESQL__PASSWORD: file:///run/secrets/postgres_password
+      AUTHENTIK_ERROR_REPORTING__ENABLED: "true"
+      AUTHENTIK_SECRET_KEY: file:///run/secrets/authentik_secret_key
+      AUTHENTIK_EMAIL__HOST: postfix-Stmp
+      AUTHENTIK_EMAIL__PORT: 25
+      AUTHENTIK_EMAIL__FROM: noreply@javamurray.com
+      AUTHENTIK_LOG_LEVEL: info
+    user: root
+    env_file:
+      - ./.env
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./media:/media
+      - ./certs:/certs
+      - ./custom-templates:/templates
+    # depends_on:
+    #   - tasks.postgresql_postgresql
+    #   - tasks.auth_redis
+    networks:
+      # - backend
+      - auth-backend
+      - proxy-net
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.hostname == Home-Lab-Live
+      resources:
+        limits:
+          memory: 2g
+
+volumes:
+  database:
+  redis:
+networks:
+  # proxy:
+  #   external: true
+  # backend:
+  #   external: true
+  proxy-net:
+    external: true
+  auth-backend:
+    external: true
+
+secrets:
+  authentik_secret_key:
+    file: ./secrets/authentik_secret_key.txt
+  postgres_password:
+    file: ./secrets/postgress_password.txt

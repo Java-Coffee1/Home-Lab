@@ -1,0 +1,47 @@
+# postgress-ini is where it sets the database user and passd 
+#docker stack deploy -c compose.yml postgresql
+#docker stack rm postgresql
+# docker service logs postgresql_postgresql
+#docker exec -it $(docker ps -qf name=postgresql_postgresql) psql -U admin -d homelabpsql 
+services:
+  postgresql:
+    image: postgres:18-alpine
+    volumes:
+      - postgresql_database_homelab:/var/lib/postgresql
+      # - ./postgres-init:/docker-entrypoint-initdb.d
+    secrets:
+      - postgres_password
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
+      POSTGRES_DB: homelabpsql
+      TZ: America/Vancouver
+      PGTZ: America/Vancouver
+    # ports:
+    #   - '5432:5432'
+    networks:
+      - proxy-net
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.hostname == Home-Lab-Live
+      resources:
+        limits:
+          memory: 8g
+
+networks:
+  proxy-net:
+    external: true
+
+volumes:
+  postgresql_database_homelab:
+    driver: local
+    driver_opts:
+      type: nfs
+      o: addr=10.30.30.101,rw,nfsvers=4
+      device: ":/mnt/DataDumpster/postgresql-docker"
+
+secrets:
+  postgres_password:
+    file: ./secrets/postgress_password.txt

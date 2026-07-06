@@ -1,0 +1,43 @@
+services:
+  convertx:
+    image: ghcr.io/c4illin/convertx
+    container_name: convertx
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - JWT_SECRET=${JWT_SECRET}
+      - HTTP_ALLOWED=true
+      - ALLOW_UNAUTHENTICATED=true
+    volumes:
+      - ./data:/app/data
+      - type: tmpfs
+        target: /app/tmp
+        tmpfs:
+          size: 34359738368 # 32 GiB
+          mode: 1777
+    mem_limit: 40g # headroom above the 32GiB tmpfs
+    networks:
+      - proxy-net
+
+  metube:
+    image: ghcr.io/alexta69/metube
+    container_name: metube
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+    environment:
+      - MAX_CONCURRENT_DOWNLOADS=5
+    volumes:
+      - /downloads:/downloads
+      - type: tmpfs
+        target: /app/tmp
+        tmpfs:
+          size: 34359738368 # 32 GiB
+          mode: 1777
+    mem_limit: 40g
+    networks:
+      - proxy-net
+networks:
+  proxy-net:
+    external: true

@@ -59,6 +59,14 @@
         href: http://fs.javamurray.com
         description: File sharing and uploads
 
+- Content Downloading:
+    - Metube:
+        href: http://ytdl.javamurray.com
+        description: YouTube and other video downloads
+    - ConvertX:
+        href: http://convertx.javamurray.com
+        description: Video conversion and processing
+
 - Management Apps:
     - Traefik:
         href: http://traefik-live.javamurray.com
@@ -66,3 +74,8 @@
     - Authentik:
         href: http://auth.javamurray.com
         description: SSO, authentication, and 2FA
+    - Promox:
+        href: https://10.25.25.100:8006
+        description: Virtualization management
+    - TrueNAS:
+        href: http://truenas.arpa

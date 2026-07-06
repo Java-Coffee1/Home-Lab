@@ -21,6 +21,10 @@ http:
         loadBalancer:
           servers:
             - url: "http://convertx:3000"
+      Metube:
+        loadBalancer:
+          servers:
+            - url: "http://metube:8081"
       openwebui:
         loadBalancer:
           servers:
@@ -45,4 +49,8 @@ http:
         loadBalancer:
           servers:
             - url: "http://10.10.1.107:8085"
+      ArchiveBox:
+        loadBalancer:
+          servers:
+            - url: "http://archivebox:8000"
             

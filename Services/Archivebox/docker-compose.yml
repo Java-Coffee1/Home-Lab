@@ -1,0 +1,34 @@
+services:
+  ArchiveBox:
+    image: archivebox/archivebox:latest
+    container_name: archivebox
+    restart: unless-stopped
+    networks:
+      - proxy-net
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/data
+      - archivebox-data:/data/archive
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Vancouver
+      # - REVERSE_PROXY_USER_HEADER=X-Authentik-Username
+      # - REVERSE_PROXY_WHITELIST=10.0.1.0/24 # <-- your proxy-net subnet or Authentik outpost IP
+      # - LOGOUT_REDIRECT_URL=https://auth.yourcompany.example.com/after/logout
+      - PUBLIC_INDEX=True # anyone who reaches ArchiveBox can browse the snapshot list
+      - PUBLIC_ADD_VIEW=True # anyone who reaches ArchiveBox can submit new URLs
+      - PERMISSIONS=public # snapshot content itself isn't gated behind login either
+
+volumes:
+  archivebox-data:
+    driver: local
+    driver_opts:
+      type: nfs
+      o: addr=10.30.30.101,rw,nfsvers=4
+      device: ":/mnt/DataDumpster/cloud-data-dump/data-archive/"
+
+networks:
+  proxy-net:
+    external: true

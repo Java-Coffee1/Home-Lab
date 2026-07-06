@@ -46,6 +46,16 @@ http:
         - "https-external"
       service: ConvertX
       tls: {}
+      middlewares:
+        - middlewares-authentik@file
+    Metube:
+      rule: "Host(`ytdl.javamurray.com`)"
+      entryPoints:
+        - "https-external"
+      service: Metube
+      tls: {}
+      middlewares:
+        - middlewares-authentik@file
     Homepage:
       rule: "Host(`home.javamurray.com`)"
       entryPoints:
@@ -77,4 +87,12 @@ http:
       middlewares:
         - middlewares-authentik
       service: qbittorrent
+      tls: {}
+    ArchiveBox:
+      rule: "Host(`archive.javamurray.com`)"
+      entryPoints:
+        - "https-external"
+      middlewares:
+        - middlewares-authentik
+      service: ArchiveBox
       tls: {}
